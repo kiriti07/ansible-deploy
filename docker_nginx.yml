@@ -1,0 +1,40 @@
+---
+- hosts: Web, App
+  remote_user: ec2-user
+  become: true
+  tasks:
+    - name: Add Docker repository
+      command: sudo yum-config-manager --add-repo https://download.docker.com/linux/centos/docker-ce.repo
+
+    - name: Install Docker packages
+      yum:
+        name:
+          - docker-ce
+          - docker-ce-cli
+          - containerd.io
+        state: present
+
+    - name: Start Docker service
+      systemd:
+        name: docker
+        state: started
+        enabled: yes
+    - name: Docker login
+      docker_login:
+        username: kiriti7
+        password: Kreative@Clicks@07
+        registry_url: https://index.docker.io/v1/
+
+    - name: Pull Docker image
+      docker_image:
+        name: kiriti7/nginxapp
+        source: pull
+
+    - name: Run Docker container
+      docker_container:
+        name: web_app_container
+        image: kiriti7/nginxapp
+        state: started
+        restart_policy: always
+        ports:
+          - "80:80"  # Adjust port mapping as needed
